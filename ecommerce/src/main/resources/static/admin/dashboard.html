@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ShopHub</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>Admin Panel</span>
+        </div>
+        <nav class="admin-nav">
+            <a href="dashboard.html" class="active">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="products.html">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="orders.html">
+                <i class="fas fa-shopping-bag"></i> Orders
+            </a>
+            <a href="../index.html">
+                <i class="fas fa-home"></i> Go to Store
+            </a>
+            <a href="#" id="adminLogout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Dashboard</h1>
+            <div class="admin-user">
+                <i class="fas fa-user-shield"></i>
+                <span id="adminName">Admin</span>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #3b82f6;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalUsers">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #10b981;">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalOrders">0</h3>
+                        <p>Total Orders</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f59e0b;">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalRevenue">₹0</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #ef4444;">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalProducts">0</h3>
+                        <p>Total Products</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products -->
+            <div class="dashboard-section">
+                <h2><i class="fas fa-fire"></i> Top Selling Products</h2>
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Total Sold</th>
+                        </tr>
+                        </thead>
+                        <tbody id="topProductsTable">
+                        <tr><td colspan="2" class="text-center">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="dashboard-section">
+                <h2><i class="fas fa-clock"></i> Recent Orders</h2>
+                <div id="recentOrdersContainer">
+                    <p class="text-center">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/admin.js"></script>
+</body>
+</html>

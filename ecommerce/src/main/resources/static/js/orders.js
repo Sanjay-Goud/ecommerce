@@ -1,61 +1,75 @@
-// orders.js
-protectPage();
-const API_URL = 'http://localhost:8080/api';
+document.addEventListener('DOMContentLoaded', () => {
+    if (!auth.requireAuth()) return;
+    auth.updateUserDisplay();
+    updateCartBadge();
+    updateWishlistBadge();
+    loadOrders();
+});
 
-async function loadOrders() {
+const loadOrders = async () => {
+    const container = document.getElementById('ordersContainer');
+    setLoading(container, true);
+
     try {
-        const response = await fetchWithAuth(`${API_URL}/orders`);
-        if (!response || !response.ok) throw new Error('Failed to load orders');
+        const orders = await api.getOrders();
 
-        const orders = await response.json();
-        displayOrders(orders);
+        if (orders.length === 0) {
+            setEmptyState(container, 'No orders yet', 'fa-shopping-bag');
+            return;
+        }
+
+        container.innerHTML = orders.map(order => createOrderCard(order)).join('');
     } catch (error) {
         console.error('Error loading orders:', error);
-        document.getElementById('ordersList').innerHTML = '<p>Error loading orders</p>';
+        showToast('Failed to load orders', 'error');
     }
-}
+};
 
-function displayOrders(orders) {
-    const container = document.getElementById('ordersList');
+const createOrderCard = (order) => {
+    const statusColors = {
+        PROCESSING: 'info',
+        SHIPPED: 'warning',
+        DELIVERED: 'success',
+        CANCELLED: 'danger'
+    };
 
-    if (orders.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 3rem;"><h2>No orders yet</h2><a href="products.html" class="btn btn-primary">Start Shopping</a></div>';
-        return;
-    }
-
-    container.innerHTML = orders.map(order => `
+    return `
         <div class="order-card">
             <div class="order-header">
                 <div>
                     <h3>Order #${order.id}</h3>
-                    <p>Placed on: ${new Date(order.orderDate).toLocaleDateString()}</p>
+                    <p class="order-date">${formatDate(order.orderDate)}</p>
                 </div>
-                <div>
-                    <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span>
-                    <p style="margin-top: 0.5rem; font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">$${order.totalAmount.toFixed(2)}</p>
-                </div>
+                <span class="badge badge-${statusColors[order.status]}">${order.status}</span>
             </div>
+
             <div class="order-items">
-                ${order.items.map(item => `
+                ${order.items.slice(0, 3).map(item => `
                     <div class="order-item">
-                        <img src="${item.product.imageUrl || 'https://via.placeholder.com/80'}" alt="${item.product.name}">
-                        <div style="flex: 1;">
-                            <h4>${item.product.name}</h4>
-                            <p>Quantity: ${item.quantity}</p>
-                            <p style="font-weight: bold; color: var(--primary-color);">$${item.price}</p>
+                        <img src="${item.product.imageUrl || 'https://via.placeholder.com/60'}"
+                             alt="${item.product.name}">
+                        <div>
+                            <div class="item-name">${item.product.name}</div>
+                            <div class="item-qty">Qty: ${item.quantity} × ${formatCurrency(item.price)}</div>
                         </div>
                     </div>
                 `).join('')}
+                ${order.items.length > 3 ? `<p>+ ${order.items.length - 3} more items</p>` : ''}
             </div>
-            <div style="margin-top: 1rem;">
-                <strong>Delivery Address:</strong><br>
-                ${order.deliveryAddress.addressLine1}, ${order.deliveryAddress.city}, ${order.deliveryAddress.state} ${order.deliveryAddress.zipCode}
-            </div>
-            <div style="margin-top: 1rem;">
-                <strong>Payment Status:</strong> ${order.payment.status}
+
+            <div class="order-footer">
+                <div class="order-total">
+                    <strong>Total:</strong> ${formatCurrency(order.totalAmount)}
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="viewOrderDetails(${order.id})">
+                    View Details
+                </button>
             </div>
         </div>
-    `).join('');
-}
+    `;
+};
 
-loadOrders();
+window.viewOrderDetails = (orderId) => {
+    // Could open a modal or navigate to detail page
+    alert(`View order details for order #${orderId}`);
+};

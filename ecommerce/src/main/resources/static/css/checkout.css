@@ -1,0 +1,162 @@
+.checkout-steps {
+    background: white;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.checkout-steps .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+}
+
+.step.active {
+    color: var(--primary-color);
+}
+
+.step i {
+    font-size: 24px;
+}
+
+.step-line {
+    width: 100px;
+    height: 2px;
+    background: var(--border-color);
+}
+
+.checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.checkout-section {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.checkout-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.address-card,
+.payment-option {
+    position: relative;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.address-card:hover,
+.payment-option:hover {
+    border-color: var(--primary-color);
+}
+
+.address-card input,
+.payment-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.address-card input:checked ~ .address-content,
+.payment-option input:checked ~ .payment-info {
+    color: var(--primary-color);
+}
+
+.address-card input:checked,
+.payment-option input:checked {
+    ~ * {
+        border-color: var(--primary-color);
+    }
+}
+
+.payment-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.payment-info i {
+    font-size: 24px;
+}
+
+.order-summary-checkout {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 90px;
+    height: fit-content;
+}
+
+.order-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg-light);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.order-item img {
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-name {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.item-qty {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .order-summary-checkout {
+        position: static;
+    }
+
+    .checkout-steps .container {
+        gap: 10px;
+    }
+
+    .step span {
+        display: none;
+    }
+
+    .step-line {
+        width: 50px;
+    }
+}

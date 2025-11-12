@@ -1,117 +1,151 @@
-// auth.js
-const API_URL = 'http://localhost:8080/api';
+// Authentication Functions
+const auth = {
+    // Check if user is logged in
+    isLoggedIn: () => !!storage.get(STORAGE_KEYS.TOKEN),
 
-// Check if user is logged in
-function isLoggedIn() {
-    return localStorage.getItem('token') !== null;
-}
+    // Get current user
+    getCurrentUser: () => storage.get(STORAGE_KEYS.USER),
 
-// Get user data
-function getUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-}
-
-// Get authorization header
-function getAuthHeader() {
-    const token = localStorage.getItem('token');
-    return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    };
-}
-
-// Logout
-function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = 'index.html';
-}
-
-// Update navigation based on login status
-function updateNavigation() {
-    const loggedInNav = document.getElementById('navUserLogged');
-    const loggedOutNav = document.getElementById('navUser');
-
-    if (isLoggedIn()) {
-        if (loggedInNav) loggedInNav.style.display = 'flex';
-        if (loggedOutNav) loggedOutNav.style.display = 'none';
-
-        // Add logout handler
-        const logoutLink = document.getElementById('logoutLink');
-        if (logoutLink) {
-            logoutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                logout();
-            });
+    // Login
+    login: async (email, password) => {
+        try {
+            const response = await api.login(email, password);
+            storage.set(STORAGE_KEYS.TOKEN, response.token);
+            storage.set(STORAGE_KEYS.USER, response);
+            return response;
+        } catch (error) {
+            throw error;
         }
-    } else {
-        if (loggedInNav) loggedInNav.style.display = 'none';
-        if (loggedOutNav) loggedOutNav.style.display = 'flex';
-    }
-}
+    },
 
-// Protect page (redirect to login if not authenticated)
-function protectPage() {
-    if (!isLoggedIn()) {
-        window.location.href = 'login.html';
-    }
-}
+    // Signup
+    signup: async (data) => {
+        try {
+            const response = await api.signup(data);
+            showToast('Account created successfully! Please login.', 'success');
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
 
-// Check if user is admin
-function isAdmin() {
-    const user = getUser();
-    return user && user.role === 'ADMIN';
-}
+    // Admin login
+    adminLogin: async (email, password) => {
+        try {
+            const response = await api.adminLogin(email, password);
+            storage.set(STORAGE_KEYS.TOKEN, response.token);
+            storage.set(STORAGE_KEYS.USER, response);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
 
-// Protect admin page
-function protectAdminPage() {
-    if (!isLoggedIn() || !isAdmin()) {
-        alert('Access denied. Admin only.');
+    // Logout
+    logout: () => {
+        storage.clear();
         window.location.href = 'index.html';
-    }
-}
+    },
 
-// Fetch with auth
-async function fetchWithAuth(url, options = {}) {
-    const headers = getAuthHeader();
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            ...headers,
-            ...options.headers
-        }
-    });
+    // Update user display
+    updateUserDisplay: () => {
+        const user = auth.getCurrentUser();
+        const userName = document.getElementById('userName');
+        const userBtn = document.getElementById('userBtn');
 
-    if (response.status === 401) {
-        logout();
-        return null;
-    }
-
-    return response;
-}
-
-// Initialize navigation on page load
-document.addEventListener('DOMContentLoaded', () => {
-    updateNavigation();
-    updateCartCount();
-});
-
-// Update cart count
-async function updateCartCount() {
-    if (!isLoggedIn()) return;
-
-    try {
-        const response = await fetchWithAuth(`${API_URL}/cart`);
-        if (response && response.ok) {
-            const cart = await response.json();
-            const count = cart.items ? cart.items.length : 0;
-            const cartCountElement = document.getElementById('cartCount');
-            if (cartCountElement) {
-                cartCountElement.textContent = count;
+        if (auth.isLoggedIn() && user) {
+            if (userName) {
+                userName.textContent = user.fullName.split(' ')[0];
+            }
+            if (userBtn) {
+                userBtn.onclick = () => {
+                    document.getElementById('userDropdown').classList.toggle('active');
+                };
+            }
+        } else {
+            if (userName) {
+                userName.textContent = 'Login';
+            }
+            if (userBtn) {
+                userBtn.onclick = () => openModal('loginModal');
             }
         }
-    } catch (error) {
-        console.error('Error updating cart count:', error);
+    },
+
+    // Require auth (redirect to login if not authenticated)
+    requireAuth: () => {
+        if (!auth.isLoggedIn()) {
+            window.location.href = 'index.html';
+            openModal('loginModal');
+            return false;
+        }
+        return true;
+    },
+
+    // Check if user is admin
+    isAdmin: () => {
+        const user = auth.getCurrentUser();
+        return user && user.role === 'ADMIN';
     }
+};
+
+// Login Form Handler
+if (document.getElementById('loginForm')) {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            await auth.login(email, password);
+            closeModal('loginModal');
+            showToast('Login successful!', 'success');
+            auth.updateUserDisplay();
+            updateCartBadge();
+            updateWishlistBadge();
+
+            // Redirect based on role
+            if (auth.isAdmin()) {
+                window.location.href = 'admin/dashboard.html';
+            } else {
+                window.location.reload();
+            }
+        } catch (error) {
+            showToast(error.message || 'Login failed', 'error');
+        }
+    });
 }
+
+// Signup Form Handler
+if (document.getElementById('signupForm')) {
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            fullName: document.getElementById('signupName').value,
+            email: document.getElementById('signupEmail').value,
+            phone: document.getElementById('signupPhone').value,
+            password: document.getElementById('signupPassword').value
+        };
+
+        try {
+            await auth.signup(data);
+            closeModal('signupModal');
+            openModal('loginModal');
+        } catch (error) {
+            showToast(error.message || 'Signup failed', 'error');
+        }
+    });
+}
+
+// Logout handlers
+const logoutButtons = document.querySelectorAll('#logoutBtn, #mobileLogout');
+logoutButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+            auth.logout();
+        }
+    });
+});

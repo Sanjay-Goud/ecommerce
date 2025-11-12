@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Addresses - ShopHub</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- Include header -->
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-map-marker-alt"></i> My Addresses</h1>
+        <p>Manage your delivery addresses</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <button class="btn btn-primary mb-3" onclick="openAddressModal()">
+            <i class="fas fa-plus"></i> Add New Address
+        </button>
+        <div class="addresses-grid" id="addressesContainer"></div>
+    </div>
+</section>
+
+<!-- Address Modal -->
+<div class="modal" id="addressModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="addressModalTitle">Add Address</h3>
+            <button class="close-modal" onclick="closeModal('addressModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addressForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="addrFullName" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="addrPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>Address Line 1</label>
+                    <input type="text" id="addrLine1" required>
+                </div>
+                <div class="form-group">
+                    <label>Address Line 2</label>
+                    <input type="text" id="addrLine2">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" id="addrCity" required>
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" id="addrState" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ZIP Code</label>
+                        <input type="text" id="addrZip" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" id="addrCountry" value="India" required>
+                    </div>
+                </div>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="addrDefault">
+                    Set as default address
+                </label>
+                <input type="hidden" id="addressId">
+                <button type="submit" class="btn btn-primary btn-block">Save Address</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Include footer -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/addresses.js"></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - ShopHub</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="admin-logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>Admin Panel</span>
+        </div>
+        <nav class="admin-nav">
+            <a href="dashboard.html">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="products.html" class="active">
+                <i class="fas fa-box"></i> Products
+            </a>
+            <a href="orders.html">
+                <i class="fas fa-shopping-bag"></i> Orders
+            </a>
+            <a href="../index.html">
+                <i class="fas fa-home"></i> Go to Store
+            </a>
+            <a href="#" id="adminLogout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-header">
+            <h1>Product Management</h1>
+            <button class="btn btn-primary" onclick="openProductModal()">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+        </header>
+
+        <div class="admin-content">
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                    <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Product Modal -->
+<div class="modal" id="productModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="productModalTitle">Add Product</h3>
+            <button class="close-modal" onclick="closeModal('productModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="productForm">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="prodName" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="prodDescription" rows="4" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input type="number" id="prodPrice" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        <input type="number" id="prodStock" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="prodCategory" required>
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="prodImage">
+                </div>
+                <input type="hidden" id="productId">
+                <button type="submit" class="btn btn-primary btn-block">Save Product</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/admin-products.js"></script>
+</body>
+</html>

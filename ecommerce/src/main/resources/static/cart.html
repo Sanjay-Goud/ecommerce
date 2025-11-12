@@ -3,71 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Cart - ShopEasy</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Shopping Cart - ShopHub</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<!-- Navigation -->
-<nav class="navbar">
+<!-- Header -->
+<header class="header">
     <div class="container">
-        <div class="nav-brand">
-            <h1>🛍️ ShopEasy</h1>
-        </div>
-        <div class="nav-menu">
-            <a href="index.html">Home</a>
-            <a href="products.html">Products</a>
-            <div class="nav-user-logged" id="navUserLogged">
-                <a href="cart.html">
-                    <span>🛒 Cart</span>
-                    <span class="cart-count" id="cartCount">0</span>
-                </a>
-                <a href="wishlist.html">❤️ Wishlist</a>
-                <a href="orders.html">📦 Orders</a>
-                <a href="profile.html">👤 Profile</a>
-                <a href="#" id="logoutLink">Logout</a>
+        <div class="header-content">
+            <div class="logo" onclick="window.location.href='index.html'">
+                <i class="fas fa-shopping-bag"></i>
+                <span>ShopHub</span>
             </div>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search products...">
+                <button id="searchBtn"><i class="fas fa-search"></i></button>
+            </div>
+
+            <nav class="nav-menu desktop-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="products.html" class="nav-link">Products</a>
+                <a href="wishlist.html" class="nav-link">
+                    <i class="fas fa-heart"></i>
+                    <span class="badge" id="wishlistBadge">0</span>
+                </a>
+                <a href="cart.html" class="nav-link active">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="badge" id="cartBadge">0</span>
+                </a>
+                <div class="user-menu">
+                    <button class="user-btn" id="userBtn">
+                        <i class="fas fa-user"></i>
+                        <span id="userName">Account</span>
+                    </button>
+                    <div class="dropdown" id="userDropdown">
+                        <a href="profile.html">Profile</a>
+                        <a href="orders.html">Orders</a>
+                        <a href="addresses.html">Addresses</a>
+                        <a href="#" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </nav>
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </div>
-</nav>
+</header>
 
-<!-- Cart Content -->
-<div class="cart-container">
-    <h1>Shopping Cart</h1>
-
-    <div class="cart-items" id="cartItems">
-        <div class="loading">Loading cart...</div>
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+        <span>Menu</span>
+        <button id="closeMobileMenu"><i class="fas fa-times"></i></button>
     </div>
+    <nav class="mobile-nav">
+        <a href="index.html" class="mobile-nav-link">Home</a>
+        <a href="products.html" class="mobile-nav-link">Products</a>
+        <a href="wishlist.html" class="mobile-nav-link">
+            Wishlist <span class="badge" id="mobileWishlistBadge">0</span>
+        </a>
+        <a href="cart.html" class="mobile-nav-link active">
+            Cart <span class="badge" id="mobileCartBadge">0</span>
+        </a>
+        <a href="profile.html" class="mobile-nav-link">Profile</a>
+        <a href="orders.html" class="mobile-nav-link">Orders</a>
+        <a href="addresses.html" class="mobile-nav-link">Addresses</a>
+        <a href="#" class="mobile-nav-link" id="mobileLogout">Logout</a>
+    </nav>
+</div>
 
-    <div class="cart-summary" id="cartSummary" style="display: none;">
-        <h2>Order Summary</h2>
-        <div class="summary-row">
-            <span>Subtotal:</span>
-            <span id="subtotal">$0.00</span>
-        </div>
-        <div class="summary-row">
-            <span>Tax (10%):</span>
-            <span id="tax">$0.00</span>
-        </div>
-        <div class="summary-row">
-            <span>Shipping:</span>
-            <span id="shipping">$5.00</span>
-        </div>
-        <div class="summary-row total">
-            <span>Total:</span>
-            <span id="total">$0.00</span>
-        </div>
-        <button class="btn btn-primary btn-block" onclick="proceedToCheckout()">Proceed to Checkout</button>
-        <button class="btn btn-danger btn-block" onclick="clearCart()" style="margin-top: 1rem;">Clear Cart</button>
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-shopping-cart"></i> Shopping Cart</h1>
+        <p>Review your items before checkout</p>
     </div>
 </div>
 
-<footer>
+<!-- Cart Section -->
+<section class="section">
     <div class="container">
-        <p>&copy; 2024 ShopEasy. All rights reserved.</p>
+        <div class="cart-layout">
+            <!-- Cart Items -->
+            <div class="cart-items">
+                <div class="cart-header">
+                    <h2>Cart Items (<span id="itemCount">0</span>)</h2>
+                    <button class="btn btn-secondary btn-sm" id="clearCartBtn">
+                        <i class="fas fa-trash"></i> Clear Cart
+                    </button>
+                </div>
+                <div id="cartItemsContainer">
+                    <!-- Cart items will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">₹0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span id="shipping">FREE</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tax (18%)</span>
+                    <span id="tax">₹0.00</span>
+                </div>
+                <hr>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="total">₹0.00</span>
+                </div>
+                <button class="btn btn-primary btn-block" id="checkoutBtn">
+                    Proceed to Checkout
+                </button>
+                <a href="products.html" class="btn btn-secondary btn-block">
+                    Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>ShopHub</h3>
+                <p>Your trusted online shopping destination</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Customer Service</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Returns</a></li>
+                    <li><a href="#">Shipping Info</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 ShopHub. All rights reserved.</p>
+        </div>
     </div>
 </footer>
 
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
 <script src="js/cart.js"></script>
 </body>
 </html>

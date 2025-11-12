@@ -1,176 +1,209 @@
-// products.js
-const API_URL = 'http://localhost:8080/api';
+// Products Page Logic
+let currentFilters = {
+    categoryId: null,
+    sortBy: null,
+    minPrice: null,
+    maxPrice: null,
+    search: null
+};
 
-// Load categories
-async function loadCategories() {
+document.addEventListener('DOMContentLoaded', async () => {
+    auth.updateUserDisplay();
+
+    if (auth.isLoggedIn()) {
+        updateCartBadge();
+        updateWishlistBadge();
+    }
+
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    currentFilters.categoryId = urlParams.get('category');
+    currentFilters.search = urlParams.get('search');
+
+    await loadCategories();
+    await loadProducts();
+    setupFilters();
+    setupSearch();
+});
+
+const loadCategories = async () => {
     try {
-        const response = await fetch(`${API_URL}/categories`);
-        const categories = await response.json();
+        const categories = await api.getCategories();
+        const container = document.getElementById('categoriesFilter');
+        const mobileContainer = document.getElementById('mobileCategoriesFilter');
 
-        const select = document.getElementById('categoryFilter');
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-            select.appendChild(option);
+        const html = categories.map(cat => `
+            <div class="filter-option">
+                <input type="radio" name="category" value="${cat.id}"
+                       id="cat-${cat.id}" ${currentFilters.categoryId == cat.id ? 'checked' : ''}>
+                <label for="cat-${cat.id}">${cat.name}</label>
+            </div>
+        `).join('');
+
+        if (container) container.innerHTML = html;
+        if (mobileContainer) mobileContainer.innerHTML = html;
+
+        // Add event listeners
+        document.querySelectorAll('input[name="category"]').forEach(input => {
+            input.addEventListener('change', (e) => {
+                currentFilters.categoryId = e.target.value;
+                loadProducts();
+            });
         });
     } catch (error) {
         console.error('Error loading categories:', error);
     }
-}
+};
 
-// Load products
-async function loadProducts(params = {}) {
+const loadProducts = async () => {
+    const container = document.getElementById('productsGrid');
+    const resultsCount = document.getElementById('resultsCount');
+    const pageTitle = document.getElementById('pageTitle');
+
+    setLoading(container, true);
+
     try {
-        const queryString = new URLSearchParams(params).toString();
-        const url = `${API_URL}/products${queryString ? '?' + queryString : ''}`;
+        let products;
 
-        const response = await fetch(url);
-        const products = await response.json();
+        if (currentFilters.search) {
+            products = await api.searchProducts(currentFilters.search);
+            pageTitle.textContent = `Search Results for "${currentFilters.search}"`;
+        } else {
+            products = await api.getProducts(currentFilters);
+        }
 
-        displayProducts(products);
+        resultsCount.textContent = `${products.length} products found`;
+
+        if (products.length === 0) {
+            setEmptyState(container, 'No products found', 'fa-search');
+            return;
+        }
+
+        container.innerHTML = products.map(product => createProductCard(product)).join('');
     } catch (error) {
         console.error('Error loading products:', error);
-        document.getElementById('productsGrid').innerHTML = '<p>Error loading products</p>';
+        container.innerHTML = '<p class="text-center">Failed to load products</p>';
     }
-}
+};
 
-// Display products
-function displayProducts(products) {
-    const container = document.getElementById('productsGrid');
+const setupFilters = () => {
+    const sortSelect = document.getElementById('sortSelect');
+    const applyPriceBtn = document.getElementById('applyPriceFilter');
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    const mobileFilterBtn = document.getElementById('mobileFilterBtn');
 
-    if (products.length === 0) {
-        container.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">No products found</p>';
-        return;
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            currentFilters.sortBy = e.target.value || null;
+            loadProducts();
+        });
     }
 
-    container.innerHTML = products.map(product => `
+    if (applyPriceBtn) {
+        applyPriceBtn.addEventListener('click', () => {
+            currentFilters.minPrice = document.getElementById('minPrice').value || null;
+            currentFilters.maxPrice = document.getElementById('maxPrice').value || null;
+            loadProducts();
+        });
+    }
+
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', () => {
+            currentFilters = { categoryId: null, sortBy: null, minPrice: null, maxPrice: null, search: null };
+            document.querySelectorAll('input[name="category"]').forEach(input => input.checked = false);
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            document.getElementById('sortSelect').value = '';
+            window.history.pushState({}, '', 'products.html');
+            loadProducts();
+        });
+    }
+
+    if (mobileFilterBtn) {
+        mobileFilterBtn.addEventListener('click', () => {
+            openModal('filtersModal');
+        });
+    }
+};
+
+window.applyMobileFilters = () => {
+    currentFilters.minPrice = document.getElementById('mobileMinPrice').value || null;
+    currentFilters.maxPrice = document.getElementById('mobileMaxPrice').value || null;
+
+    const selectedCategory = document.querySelector('#mobileCategoriesFilter input[name="category"]:checked');
+    currentFilters.categoryId = selectedCategory ? selectedCategory.value : null;
+
+    loadProducts();
+};
+
+const createProductCard = (product) => {
+    const imageUrl = product.imageUrl || 'https://via.placeholder.com/300x300?text=No+Image';
+    const inStock = product.stock > 0;
+
+    return `
         <div class="product-card">
-            <img src="${product.imageUrl || 'https://via.placeholder.com/250'}" alt="${product.name}">
-            <div class="product-info">
-                <h3>${product.name}</h3>
-                <div class="product-rating">
-                    ${'⭐'.repeat(Math.round(product.averageRating))}
-                    <span>(${product.reviewCount || 0})</span>
+            <div class="product-image" onclick="goToProduct(${product.id})">
+                <img src="${imageUrl}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
+                <div class="product-actions">
+                    <button class="icon-btn wishlist-btn" onclick="event.stopPropagation(); toggleWishlist(${product.id}, this)">
+                        <i class="far fa-heart"></i>
+                    </button>
                 </div>
-                <p class="product-price">$${product.price}</p>
-                <div style="display: flex; gap: 0.5rem;">
-                    <a href="product-detail.html?id=${product.id}" class="btn btn-secondary" style="flex: 1; text-align: center;">View</a>
-                    ${isLoggedIn() ? `
-                        <button class="btn btn-primary" onclick="addToCart(${product.id})" style="flex: 1;">Add to Cart</button>
-                    ` : ''}
+            </div>
+            <div class="product-info">
+                <div class="product-category">${product.category?.name || 'Uncategorized'}</div>
+                <h3 class="product-name">${product.name}</h3>
+                <div class="product-rating">
+                    <div class="stars">${generateStars(product.averageRating)}</div>
+                    <span class="rating-count">(${product.reviewCount})</span>
+                </div>
+                <div class="product-price">${formatCurrency(product.price)}</div>
+                <div class="product-footer">
+                    <button class="btn btn-primary btn-sm"
+                            onclick="addToCart(${product.id})"
+                            ${!inStock ? 'disabled' : ''}>
+                        <i class="fas fa-shopping-cart"></i>
+                        ${inStock ? 'Add to Cart' : 'Out of Stock'}
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="goToProduct(${product.id})">
+                        View
+                    </button>
                 </div>
             </div>
         </div>
-    `).join('');
-}
+    `;
+};
 
-// Apply filters
-function applyFilters() {
-    const params = {};
+const toggleWishlist = async (productId, button) => {
+    if (!auth.requireAuth()) {
+        openModal('loginModal');
+        return;
+    }
 
-    const categoryId = document.getElementById('categoryFilter').value;
-    if (categoryId) params.categoryId = categoryId;
+    if (button.classList.contains('active')) {
+        await removeFromWishlist(productId, button);
+    } else {
+        await addToWishlist(productId, button);
+    }
+};
 
-    const sortBy = document.getElementById('sortFilter').value;
-    if (sortBy) params.sortBy = sortBy;
-
-    const minPrice = document.getElementById('minPrice').value;
-    if (minPrice) params.minPrice = minPrice;
-
-    const maxPrice = document.getElementById('maxPrice').value;
-    if (maxPrice) params.maxPrice = maxPrice;
-
-    loadProducts(params);
-}
-
-// Clear filters
-function clearFilters() {
-    document.getElementById('categoryFilter').value = '';
-    document.getElementById('sortFilter').value = '';
-    document.getElementById('minPrice').value = '';
-    document.getElementById('maxPrice').value = '';
-    document.getElementById('searchInput').value = '';
-    loadProducts();
-}
-
-// Search products
-let searchTimeout;
-document.addEventListener('DOMContentLoaded', () => {
+const setupSearch = () => {
     const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                const query = e.target.value.trim();
-                if (query) {
-                    try {
-                        const response = await fetch(`${API_URL}/products/search?q=${encodeURIComponent(query)}`);
-                        const products = await response.json();
-                        displayProducts(products);
-                    } catch (error) {
-                        console.error('Error searching products:', error);
-                    }
-                } else {
-                    loadProducts();
-                }
-            }, 500);
-        });
-    }
-});
+    const searchBtn = document.getElementById('searchBtn');
 
-// Add to cart
-async function addToCart(productId) {
-    if (!isLoggedIn()) {
-        alert('Please login to add items to cart');
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!searchInput || !searchBtn) return;
 
-    try {
-        const response = await fetchWithAuth(`${API_URL}/cart/add`, {
-            method: 'POST',
-            body: JSON.stringify({ productId, quantity: 1 })
-        });
-
-        if (response && response.ok) {
-            alert('Product added to cart!');
-            updateCartCount();
-        } else {
-            const error = await response.text();
-            alert(error || 'Failed to add product to cart');
+    const performSearch = () => {
+        const query = searchInput.value.trim();
+        if (query) {
+            window.location.href = `products.html?search=${encodeURIComponent(query)}`;
         }
-    } catch (error) {
-        console.error('Error adding to cart:', error);
-        alert('Failed to add product to cart');
-    }
-}
+    };
 
-// Add to wishlist
-async function addToWishlist(productId) {
-    if (!isLoggedIn()) {
-        alert('Please login to add items to wishlist');
-        window.location.href = 'login.html';
-        return;
-    }
-
-    try {
-        const response = await fetchWithAuth(`${API_URL}/wishlist/add/${productId}`, {
-            method: 'POST'
-        });
-
-        if (response && response.ok) {
-            alert('Product added to wishlist!');
-        } else {
-            const error = await response.text();
-            alert(error || 'Failed to add product to wishlist');
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch();
         }
-    } catch (error) {
-        console.error('Error adding to wishlist:', error);
-        alert('Failed to add product to wishlist');
-    }
-}
-
-// Initialize
-loadCategories();
-loadProducts();
+    });
+};

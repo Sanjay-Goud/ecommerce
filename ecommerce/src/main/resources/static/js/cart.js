@@ -1,155 +1,190 @@
-// cart.js
-protectPage();
+// Cart Page Logic
 
-const API_URL = 'http://localhost:8080/api';
-let currentCart = null;
+document.addEventListener('DOMContentLoaded', () => {
+    if (!auth.requireAuth()) return;
 
-// Load cart
-async function loadCart() {
+    auth.updateUserDisplay();
+    updateWishlistBadge();
+    loadCart();
+    setupEventListeners();
+});
+
+let cartData = null;
+
+const loadCart = async () => {
+    const container = document.getElementById('cartItemsContainer');
+    setLoading(container, true);
+
     try {
-        const response = await fetchWithAuth(`${API_URL}/cart`);
-        if (!response || !response.ok) {
-            throw new Error('Failed to load cart');
-        }
-
-        currentCart = await response.json();
+        cartData = await api.getCart();
         displayCart();
+        updateCartBadge();
     } catch (error) {
         console.error('Error loading cart:', error);
-        document.getElementById('cartItems').innerHTML = '<p>Error loading cart</p>';
+        showToast('Failed to load cart', 'error');
+        container.innerHTML = '<p class="text-center">Failed to load cart</p>';
     }
-}
+};
 
-// Display cart
-function displayCart() {
-    const cartItemsContainer = document.getElementById('cartItems');
-    const cartSummary = document.getElementById('cartSummary');
+const displayCart = () => {
+    const container = document.getElementById('cartItemsContainer');
+    const itemCount = document.getElementById('itemCount');
 
-    if (!currentCart || !currentCart.items || currentCart.items.length === 0) {
-        cartItemsContainer.innerHTML = `
-            <div style="text-align: center; padding: 3rem;">
-                <h2>Your cart is empty</h2>
-                <p style="margin: 1rem 0;">Start shopping to add items to your cart</p>
-                <a href="products.html" class="btn btn-primary">Browse Products</a>
+    if (!cartData || !cartData.items || cartData.items.length === 0) {
+        container.innerHTML = `
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Your cart is empty</h3>
+                <p>Add some products to get started</p>
+                <a href="products.html" class="btn btn-primary">Shop Now</a>
             </div>
         `;
-        cartSummary.style.display = 'none';
+        itemCount.textContent = '0';
+        updateSummary();
         return;
     }
 
-    cartItemsContainer.innerHTML = currentCart.items.map(item => `
-        <div class="cart-item">
-            <img src="${item.product.imageUrl || 'https://via.placeholder.com/100'}" alt="${item.product.name}">
+    itemCount.textContent = cartData.items.length;
+
+    container.innerHTML = cartData.items.map(item => `
+        <div class="cart-item" data-item-id="${item.id}">
+            <div class="cart-item-image">
+                <img src="${item.product.imageUrl || 'https://via.placeholder.com/120x120?text=No+Image'}"
+                     alt="${item.product.name}"
+                     onerror="this.src='https://via.placeholder.com/120x120?text=No+Image'">
+            </div>
             <div class="cart-item-details">
-                <h3>${item.product.name}</h3>
-                <p class="cart-item-price">$${item.price}</p>
+                <h3 class="cart-item-name">${item.product.name}</h3>
+                <div class="cart-item-price">${formatCurrency(item.price)}</div>
+                <div class="cart-item-stock ${item.product.stock <= 0 ? 'out-of-stock' : ''}">
+                    ${item.product.stock > 0 ? `In Stock (${item.product.stock} available)` : 'Out of Stock'}
+                </div>
                 <div class="quantity-controls">
-                    <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
-                    <span>${item.quantity}</span>
-                    <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
-                    <button class="btn btn-danger" onclick="removeItem(${item.id})" style="margin-left: 1rem;">Remove</button>
+                    <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})"
+                            ${item.quantity <= 1 ? 'disabled' : ''}>
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" value="${item.quantity}"
+                           onchange="updateQuantity(${item.id}, this.value)"
+                           min="1" max="${item.product.stock}">
+                    <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})"
+                            ${item.quantity >= item.product.stock ? 'disabled' : ''}>
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </div>
             </div>
-            <div style="text-align: right;">
-                <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color);">
-                    $${(item.price * item.quantity).toFixed(2)}
-                </p>
+            <div class="cart-item-actions">
+                <div class="cart-item-total">
+                    ${formatCurrency(item.price * item.quantity)}
+                </div>
+                <button class="remove-btn" onclick="removeItem(${item.id})">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
             </div>
         </div>
     `).join('');
 
-    // Calculate totals
-    const subtotal = parseFloat(currentCart.totalPrice);
-    const tax = subtotal * 0.10;
-    const shipping = 5.00;
-    const total = subtotal + tax + shipping;
+    updateSummary();
+};
 
-    document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
-    document.getElementById('shipping').textContent = `$${shipping.toFixed(2)}`;
-    document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+const updateQuantity = async (itemId, quantity) => {
+    quantity = parseInt(quantity);
 
-    cartSummary.style.display = 'block';
-    updateCartCount();
-}
-
-// Update quantity
-async function updateQuantity(itemId, newQuantity) {
-    if (newQuantity < 1) {
-        if (confirm('Remove this item from cart?')) {
-            await removeItem(itemId);
-        }
+    if (quantity < 1) {
+        showToast('Quantity must be at least 1', 'warning');
         return;
     }
 
     try {
-        const response = await fetchWithAuth(`${API_URL}/cart/update/${itemId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ quantity: newQuantity })
-        });
-
-        if (response && response.ok) {
-            currentCart = await response.json();
-            displayCart();
-        } else {
-            const error = await response.text();
-            alert(error || 'Failed to update quantity');
-        }
+        cartData = await api.updateCartItem(itemId, quantity);
+        displayCart();
+        showToast('Quantity updated', 'success');
+        updateCartBadge();
     } catch (error) {
         console.error('Error updating quantity:', error);
-        alert('Failed to update quantity');
+        showToast(error.message || 'Failed to update quantity', 'error');
+        loadCart(); // Reload to show correct state
     }
-}
+};
 
-// Remove item
-async function removeItem(itemId) {
+const removeItem = async (itemId) => {
+    if (!confirm('Remove this item from cart?')) return;
+
     try {
-        const response = await fetchWithAuth(`${API_URL}/cart/remove/${itemId}`, {
-            method: 'DELETE'
-        });
-
-        if (response && response.ok) {
-            currentCart = await response.json();
-            displayCart();
-        } else {
-            alert('Failed to remove item');
-        }
+        cartData = await api.removeFromCart(itemId);
+        displayCart();
+        showToast('Item removed from cart', 'success');
+        updateCartBadge();
     } catch (error) {
         console.error('Error removing item:', error);
-        alert('Failed to remove item');
+        showToast(error.message || 'Failed to remove item', 'error');
     }
-}
+};
 
-// Clear cart
-async function clearCart() {
-    if (!confirm('Are you sure you want to clear your cart?')) {
-        return;
-    }
+const clearCart = async () => {
+    if (!confirm('Are you sure you want to clear your cart?')) return;
 
     try {
-        const response = await fetchWithAuth(`${API_URL}/cart/clear`, {
-            method: 'DELETE'
-        });
-
-        if (response && response.ok) {
-            loadCart();
-        } else {
-            alert('Failed to clear cart');
-        }
+        await api.clearCart();
+        cartData = { items: [], totalPrice: 0 };
+        displayCart();
+        showToast('Cart cleared', 'success');
+        updateCartBadge();
     } catch (error) {
         console.error('Error clearing cart:', error);
-        alert('Failed to clear cart');
+        showToast(error.message || 'Failed to clear cart', 'error');
     }
-}
+};
 
-// Proceed to checkout
-function proceedToCheckout() {
-    if (!currentCart || !currentCart.items || currentCart.items.length === 0) {
-        alert('Your cart is empty');
-        return;
+const updateSummary = () => {
+    const subtotal = cartData?.totalPrice || 0;
+    const tax = subtotal * 0.18; // 18% tax
+    const shipping = 0; // Free shipping
+    const total = subtotal + tax + shipping;
+
+    document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+    document.getElementById('tax').textContent = formatCurrency(tax);
+    document.getElementById('shipping').textContent = shipping === 0 ? 'FREE' : formatCurrency(shipping);
+    document.getElementById('total').textContent = formatCurrency(total);
+};
+
+const setupEventListeners = () => {
+    const clearCartBtn = document.getElementById('clearCartBtn');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    if (clearCartBtn) {
+        clearCartBtn.addEventListener('click', clearCart);
     }
-    window.location.href = 'checkout.html';
-}
 
-// Initialize
-loadCart();
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            if (!cartData || !cartData.items || cartData.items.length === 0) {
+                showToast('Your cart is empty', 'warning');
+                return;
+            }
+            window.location.href = 'checkout.html';
+        });
+    }
+};
+
+// Search functionality
+const searchBtn = document.getElementById('searchBtn');
+const searchInput = document.getElementById('searchInput');
+
+if (searchBtn && searchInput) {
+    searchBtn.addEventListener('click', () => {
+        const query = searchInput.value.trim();
+        if (query) {
+            window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+        }
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+            }
+        }
+    });
+}

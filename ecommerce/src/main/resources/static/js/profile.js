@@ -1,61 +1,44 @@
-// profile.js
-protectPage();
-const API_URL = 'http://localhost:8080/api';
+document.addEventListener('DOMContentLoaded', () => {
+    if (!auth.requireAuth()) return;
+    auth.updateUserDisplay();
+    updateCartBadge();
+    updateWishlistBadge();
+    loadProfile();
+});
 
-async function loadProfile() {
+const loadProfile = async () => {
     try {
-        const response = await fetchWithAuth(`${API_URL}/users/profile`);
-        if (!response || !response.ok) throw new Error('Failed to load profile');
+        const user = await api.getProfile();
 
-        const user = await response.json();
+        document.getElementById('profileName').textContent = user.fullName;
+        document.getElementById('profileEmail').textContent = user.email;
         document.getElementById('fullName').value = user.fullName;
         document.getElementById('email').value = user.email;
         document.getElementById('phone').value = user.phone || '';
     } catch (error) {
         console.error('Error loading profile:', error);
+        showToast('Failed to load profile', 'error');
     }
-}
+};
 
-async function updateProfile(event) {
-    event.preventDefault();
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
     const data = {
         fullName: document.getElementById('fullName').value,
         phone: document.getElementById('phone').value
     };
 
     try {
-        const response = await fetchWithAuth(`${API_URL}/users/profile`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
+        await api.updateProfile(data);
+        showToast('Profile updated successfully', 'success');
 
-        if (response && response.ok) {
-            alert('Profile updated successfully!');
-        }
+        // Update local user data
+        const currentUser = auth.getCurrentUser();
+        currentUser.fullName = data.fullName;
+        storage.set(STORAGE_KEYS.USER, currentUser);
+        auth.updateUserDisplay();
     } catch (error) {
-        console.error('Error updating profile:', error);
+        showToast(error.message || 'Failed to update profile', 'error');
     }
-}
-
-async function loadAddresses() {
-    try {
-        const response = await fetchWithAuth(`${API_URL}/users/addresses`);
-        if (!response || !response.ok) throw new Error('Failed to load addresses');
-
-        const addresses = await response.json();
-        const container = document.getElementById('addressesList');
-
-        container.innerHTML = addresses.map(addr => `
-            <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                <strong>${addr.fullName}</strong><br>
-                ${addr.addressLine1}, ${addr.city}, ${addr.state} ${addr.zipCode}<br>
-                Phone: ${addr.phone}
-            </div>
-        `).join('') || '<p>No addresses saved</p>';
-    } catch (error) {
-        console.error('Error loading addresses:', error);
-    }
-}
-
-loadProfile();
-loadAddresses();
+});

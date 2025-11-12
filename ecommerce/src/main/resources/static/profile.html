@@ -3,58 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - ShopEasy</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>My Profile - ShopHub</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<nav class="navbar">
+<!-- Include header -->
+
+<div class="page-header">
     <div class="container">
-        <div class="nav-brand"><h1>🛍️ ShopEasy</h1></div>
-        <div class="nav-menu">
-            <a href="index.html">Home</a>
-            <a href="products.html">Products</a>
-            <div class="nav-user-logged" id="navUserLogged">
-                <a href="cart.html"><span>🛒 Cart</span><span class="cart-count" id="cartCount">0</span></a>
-                <a href="wishlist.html">❤️ Wishlist</a>
-                <a href="orders.html">📦 Orders</a>
-                <a href="profile.html">👤 Profile</a>
-                <a href="#" id="logoutLink">Logout</a>
-            </div>
-        </div>
-    </div>
-</nav>
-
-<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 20px;">
-    <h1>My Profile</h1>
-
-    <div style="background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
-        <h2>Profile Information</h2>
-        <form id="profileForm" onsubmit="updateProfile(event)">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="fullName" required>
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="email" disabled>
-            </div>
-            <div class="form-group">
-                <label>Phone</label>
-                <input type="tel" id="phone" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Update Profile</button>
-        </form>
-    </div>
-
-    <div style="background: white; padding: 2rem; border-radius: 12px;">
-        <h2>Saved Addresses</h2>
-        <div id="addressesList"><div class="loading">Loading addresses...</div></div>
+        <h1><i class="fas fa-user"></i> My Profile</h1>
+        <p>Manage your account information</p>
     </div>
 </div>
 
-<footer><div class="container"><p>&copy; 2024 ShopEasy. All rights reserved.</p></div></footer>
+<section class="section">
+    <div class="container">
+        <div class="profile-layout">
+            <aside class="profile-sidebar">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h3 id="profileName">User Name</h3>
+                <p id="profileEmail">email@example.com</p>
+                <nav class="profile-nav">
+                    <a href="#" class="active" data-tab="info">Personal Info</a>
+                    <a href="orders.html">My Orders</a>
+                    <a href="addresses.html">Addresses</a>
+                    <a href="wishlist.html">Wishlist</a>
+                </nav>
+            </aside>
 
+            <div class="profile-content">
+                <div class="profile-section">
+                    <h2>Personal Information</h2>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" id="phone" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Include footer -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
 <script src="js/profile.js"></script>
 </body>
 </html>

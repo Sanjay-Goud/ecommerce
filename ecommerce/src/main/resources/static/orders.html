@@ -3,79 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders - ShopEasy</title>
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .orders-container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 20px;
-        }
-        .order-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: var(--card-shadow);
-        }
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 1rem;
-        }
-        .order-status {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-        .status-processing { background: #fef3c7; color: #92400e; }
-        .status-shipped { background: #dbeafe; color: #1e40af; }
-        .status-delivered { background: #d1fae5; color: #065f46; }
-        .order-items {
-            margin: 1rem 0;
-        }
-        .order-item {
-            display: flex;
-            gap: 1rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .order-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-    </style>
+    <title>My Orders - ShopHub</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<nav class="navbar">
-    <div class="container">
-        <div class="nav-brand"><h1>🛍️ ShopEasy</h1></div>
-        <div class="nav-menu">
-            <a href="index.html">Home</a>
-            <a href="products.html">Products</a>
-            <div class="nav-user-logged" id="navUserLogged">
-                <a href="cart.html"><span>🛒 Cart</span><span class="cart-count" id="cartCount">0</span></a>
-                <a href="wishlist.html">❤️ Wishlist</a>
-                <a href="orders.html">📦 Orders</a>
-                <a href="profile.html">👤 Profile</a>
-                <a href="#" id="logoutLink">Logout</a>
-            </div>
-        </div>
-    </div>
-</nav>
+<!-- Include same header and mobile menu as other pages -->
 
-<div class="orders-container">
-    <h1>My Orders</h1>
-    <div id="ordersList"><div class="loading">Loading orders...</div></div>
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-box"></i> My Orders</h1>
+        <p>Track and manage your orders</p>
+    </div>
 </div>
 
-<footer><div class="container"><p>&copy; 2024 ShopEasy. All rights reserved.</p></div></footer>
+<section class="section">
+    <div class="container">
+        <div id="ordersContainer"></div>
+    </div>
+</section>
 
+<!-- Include footer -->
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
 <script src="js/orders.js"></script>
 </body>
 </html>
