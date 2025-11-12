@@ -36,7 +36,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html").permitAll()  // ADD THIS LINE
+                        // Static resources
+                        .requestMatchers("/", "/index.html", "/*.html", "/css/**", "/js/**", "/admin/**").permitAll()
+                        // API endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/categories/**").permitAll()
