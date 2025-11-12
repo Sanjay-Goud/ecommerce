@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - ShopEasy</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .product-detail-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .product-image img {
+            width: 100%;
+            border-radius: 12px;
+        }
+        .product-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .reviews-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+        }
+        .review-card {
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .review-form {
+            background: #f8fafc;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 768px) {
+            .product-detail {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-brand">
+            <h1>🛍️ ShopEasy</h1>
+        </div>
+        <div class="nav-menu">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <div class="nav-user" id="navUser">
+                <a href="login.html">Login</a>
+                <a href="signup.html">Sign Up</a>
+            </div>
+            <div class="nav-user-logged" id="navUserLogged" style="display: none;">
+                <a href="cart.html">
+                    <span>🛒 Cart</span>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <a href="wishlist.html">❤️ Wishlist</a>
+                <a href="orders.html">📦 Orders</a>
+                <a href="profile.html">👤 Profile</a>
+                <a href="#" id="logoutLink">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Product Detail -->
+<div class="product-detail-container">
+    <div class="product-detail" id="productDetail">
+        <div class="loading">Loading product...</div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section">
+        <h2>Customer Reviews</h2>
+
+        <!-- Add Review Form -->
+        <div class="review-form" id="reviewForm" style="display: none;">
+            <h3>Write a Review</h3>
+            <form onsubmit="submitReview(event)">
+                <div class="form-group">
+                    <label>Rating</label>
+                    <select id="rating" required>
+                        <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                        <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+                        <option value="3">⭐⭐⭐ 3 Stars</option>
+                        <option value="2">⭐⭐ 2 Stars</option>
+                        <option value="1">⭐ 1 Star</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Comment</label>
+                    <textarea id="comment" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+        </div>
+
+        <!-- Reviews List -->
+        <div id="reviewsList">
+            <div class="loading">Loading reviews...</div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <p>&copy; 2024 ShopEasy. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script>
+    const API_URL = 'http://localhost:8080/api';
+    const productId = new URLSearchParams(window.location.search).get('id');
+    let currentProduct = null;
+
+    // Load product details
+    async function loadProduct() {
+        try {
+            const response = await fetch(`${API_URL}/products/${productId}`);
+            const product = await response.json();
+            currentProduct = product;
+
+            document.getElementById('productDetail').innerHTML = `
+                <div class="product-image">
+                    <img src="${product.imageUrl || 'https://via.placeholder.com/500'}" alt="${product.name}">
+                </div>
+                <div class="product-info">
+                    <h1>${product.name}</h1>
+                    <div class="product-rating" style="font-size: 1.2rem; margin: 1rem 0;">
+                        ${'⭐'.repeat(Math.round(product.averageRating))}
+                        <span>(${product.reviewCount || 0} reviews)</span>
+                    </div>
+                    <p class="product-price" style="font-size: 2rem;">$${product.price}</p>
+                    <p style="margin: 1.5rem 0; line-height: 1.8;">${product.description || 'No description available'}</p>
+                    <p style="color: ${product.stock > 0 ? 'var(--success-color)' : 'var(--danger-color)'}; font-weight: bold;">
+                        ${product.stock > 0 ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+                    </p>
+                    ${isLoggedIn() && product.stock > 0 ? `
+                        <div class="product-actions">
+                            <button class="btn btn-primary" onclick="addToCart()" style="flex: 1;">Add to Cart</button>
+                            <button class="btn btn-secondary" onclick="addToWishlist()">❤️ Wishlist</button>
+                        </div>
+                    ` : product.stock === 0 ? '<p style="margin-top: 1rem;">Product is out of stock</p>' : '<p style="margin-top: 1rem;"><a href="login.html">Login</a> to purchase</p>'}
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error loading product:', error);
+            document.getElementById('productDetail').innerHTML = '<p>Error loading product</p>';
+        }
+    }
+
+    // Load reviews
+    async function loadReviews() {
+        try {
+            const response = await fetch(`${API_URL}/reviews/product/${productId}`);
+            const reviews = await response.json();
+
+            const reviewsList = document.getElementById('reviewsList');
+            if (reviews.length === 0) {
+                reviewsList.innerHTML = '<p>No reviews yet. Be the first to review!</p>';
+            } else {
+                reviewsList.innerHTML = reviews.map(review => `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div>
+                                <strong>${review.user.fullName}</strong>
+                                <div>${'⭐'.repeat(review.rating)}</div>
+                            </div>
+                            <small>${new Date(review.createdAt).toLocaleDateString()}</small>
+                        </div>
+                        <p>${review.comment}</p>
+                    </div>
+                `).join('');
+            }
+
+            // Show review form if logged in
+            if (isLoggedIn()) {
+                document.getElementById('reviewForm').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            document.getElementById('reviewsList').innerHTML = '<p>Error loading reviews</p>';
+        }
+    }
+
+    // Add to cart
+    async function addToCart() {
+        try {
+            const response = await fetchWithAuth(`${API_URL}/cart/add`, {
+                method: 'POST',
+                body: JSON.stringify({ productId: parseInt(productId), quantity: 1 })
+            });
+
+            if (response && response.ok) {
+                alert('Product added to cart!');
+                updateCartCount();
+            } else {
+                alert('Failed to add product to cart');
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            alert('Failed to add product to cart');
+        }
+    }
+
+    // Add to wishlist
+    async function addToWishlist() {
+        try {
+            const response = await fetchWithAuth(`${API_URL}/wishlist/add/${productId}`, {
+                method: 'POST'
+            });
+
+            if (response && response.ok) {
+                alert('Product added to wishlist!');
+            } else {
+                const error = await response.text();
+                alert(error || 'Failed to add to wishlist');
+            }
+        } catch (error) {
+            console.error('Error adding to wishlist:', error);
+            alert('Failed to add to wishlist');
+        }
+    }
+
+    // Submit review
+    async function submitReview(event) {
+        event.preventDefault();
+
+        const rating = document.getElementById('rating').value;
+        const comment = document.getElementById('comment').value;
+
+        try {
+            const response = await fetchWithAuth(`${API_URL}/reviews`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    productId: parseInt(productId),
+                    rating: parseInt(rating),
+                    comment
+                })
+            });
+
+            if (response && response.ok) {
+                alert('Review submitted successfully!');
+                document.getElementById('rating').value = '5';
+                document.getElementById('comment').value = '';
+                loadProduct();
+                loadReviews();
+            } else {
+                const error = await response.text();
+                alert(error || 'Failed to submit review');
+            }
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            alert('Failed to submit review');
+        }
+    }
+
+    // Initialize
+    loadProduct();
+    loadReviews();
+</script>
+</body>
+</html>

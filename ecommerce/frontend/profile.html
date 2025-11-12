@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ShopEasy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-brand"><h1>🛍️ ShopEasy</h1></div>
+        <div class="nav-menu">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <div class="nav-user-logged" id="navUserLogged">
+                <a href="cart.html"><span>🛒 Cart</span><span class="cart-count" id="cartCount">0</span></a>
+                <a href="wishlist.html">❤️ Wishlist</a>
+                <a href="orders.html">📦 Orders</a>
+                <a href="profile.html">👤 Profile</a>
+                <a href="#" id="logoutLink">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 20px;">
+    <h1>My Profile</h1>
+
+    <div style="background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+        <h2>Profile Information</h2>
+        <form id="profileForm" onsubmit="updateProfile(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" disabled>
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" id="phone" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+
+    <div style="background: white; padding: 2rem; border-radius: 12px;">
+        <h2>Saved Addresses</h2>
+        <div id="addressesList"><div class="loading">Loading addresses...</div></div>
+    </div>
+</div>
+
+<footer><div class="container"><p>&copy; 2024 ShopEasy. All rights reserved.</p></div></footer>
+
+<script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>
