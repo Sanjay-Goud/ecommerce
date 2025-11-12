@@ -1,7 +1,7 @@
 package com.sanjay.ecommerce.security;
 
-import com.ecommerce.model.User;
-import com.ecommerce.repository.UserRepository;
+import com.sanjay.ecommerce.model.User;
+import com.sanjay.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -17,6 +17,10 @@ public class AdminService {
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
 
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
     public Product createProduct(Product product) {
         return productRepository.save(product);
     }

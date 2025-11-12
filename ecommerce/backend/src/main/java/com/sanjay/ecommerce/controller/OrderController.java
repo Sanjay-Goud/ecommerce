@@ -1,10 +1,10 @@
 package com.sanjay.ecommerce.controller;
 
-import com.ecommerce.dto.CheckoutRequest;
-import com.ecommerce.model.Order;
-import com.ecommerce.model.User;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.service.OrderService;
+import com.sanjay.ecommerce.dto.CheckoutRequest;
+import com.sanjay.ecommerce.model.Order;
+import com.sanjay.ecommerce.model.User;
+import com.sanjay.ecommerce.repository.UserRepository;
+import com.sanjay.ecommerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

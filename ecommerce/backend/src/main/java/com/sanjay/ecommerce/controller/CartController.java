@@ -1,9 +1,9 @@
 package com.sanjay.ecommerce.controller;
 
-import com.ecommerce.model.Cart;
-import com.ecommerce.model.User;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.service.CartService;
+import com.sanjay.ecommerce.model.Cart;
+import com.sanjay.ecommerce.model.User;
+import com.sanjay.ecommerce.repository.UserRepository;
+import com.sanjay.ecommerce.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

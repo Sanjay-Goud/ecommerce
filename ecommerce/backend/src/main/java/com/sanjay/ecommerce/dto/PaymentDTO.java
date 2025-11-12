@@ -12,15 +12,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDTO {
+class PaymentDTO {
     private Long id;
-    private Long userId;
-    private String userName;
-    private String userEmail;
-    private BigDecimal totalAmount;
+    private BigDecimal amount;
+    private String paymentMethod;
     private String status;
-    private LocalDateTime orderDate;
-    private AddressDTO deliveryAddress;
-    private List<OrderItemDTO> items;
-    private PaymentDTO payment;
+    private String transactionId;
+    private LocalDateTime paymentDate;
 }

@@ -1,9 +1,9 @@
 package com.sanjay.ecommerce.controller;
 
-import com.ecommerce.model.Order;
-import com.ecommerce.model.Product;
-import com.ecommerce.service.AdminService;
-import com.ecommerce.service.OrderService;
+import com.sanjay.ecommerce.model.Order;
+import com.sanjay.ecommerce.model.Product;
+import com.sanjay.ecommerce.service.AdminService;
+import com.sanjay.ecommerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,8 @@ public class AdminController {
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(adminService.createProduct(null)); // Will be fixed
+        List<Product> products = adminService.getAllProducts();
+        return ResponseEntity.ok(products);
     }
 
     @PostMapping("/products")

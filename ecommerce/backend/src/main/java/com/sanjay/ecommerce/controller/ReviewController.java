@@ -1,9 +1,9 @@
 package com.sanjay.ecommerce.controller;
 
-import com.ecommerce.model.Review;
-import com.ecommerce.model.User;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.service.ReviewService;
+import com.sanjay.ecommerce.model.Review;
+import com.sanjay.ecommerce.model.User;
+import com.sanjay.ecommerce.repository.UserRepository;
+import com.sanjay.ecommerce.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

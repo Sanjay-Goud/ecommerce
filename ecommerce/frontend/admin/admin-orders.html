@@ -2,9 +2,179 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Orders - Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .admin-nav {
+            background: #1e293b;
+            color: white;
+            padding: 1rem 0;
+        }
+        .admin-nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+        .orders-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        .order-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+        .status-select {
+            padding: 0.5rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
+<nav class="admin-nav">
+    <div class="container">
+        <div><h2>🛡️ Admin Dashboard</h2></div>
+        <div>
+            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-products.html">Products</a>
+            <a href="admin-orders.html">Orders</a>
+            <a href="#" id="adminLogout">Logout</a>
+        </div>
+    </div>
+</nav>
 
+<div class="orders-container">
+    <h1>Manage Orders</h1>
+    <div id="ordersList">
+        <div class="loading">Loading orders...</div>
+    </div>
+</div>
+
+<script>
+    if (!localStorage.getItem('adminToken')) {
+        window.location.href = 'admin-login.html';
+    }
+
+    const API_URL = 'http://localhost:8080/api';
+
+    function getAdminHeaders() {
+        return {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+            'Content-Type': 'application/json'
+        };
+    }
+
+    document.getElementById('adminLogout').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        window.location.href = 'admin-login.html';
+    });
+
+    async function loadOrders() {
+        try {
+            const response = await fetch(`${API_URL}/admin/orders`, {
+                headers: getAdminHeaders()
+            });
+
+            if (response.ok) {
+                const orders = await response.json();
+                displayOrders(orders);
+            }
+        } catch (error) {
+            console.error('Error loading orders:', error);
+        }
+    }
+
+    function displayOrders(orders) {
+        const container = document.getElementById('ordersList');
+
+        if (orders.length === 0) {
+            container.innerHTML = '<p>No orders found</p>';
+            return;
+        }
+
+        container.innerHTML = orders.map(order => `
+            <div class="order-card">
+                <div class="order-header">
+                    <div>
+                        <h3>Order #${order.id}</h3>
+                        <p>Customer: ${order.user.fullName}</p>
+                        <p>Email: ${order.user.email}</p>
+                        <p>Date: ${new Date(order.orderDate).toLocaleString()}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">
+                            $${order.totalAmount.toFixed(2)}
+                        </p>
+                        <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)">
+                            <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>Processing</option>
+                            <option value="SHIPPED" ${order.status === 'SHIPPED' ? 'selected' : ''}>Shipped</option>
+                            <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
+                            <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h4>Order Items:</h4>
+                ${order.items.map(item => `
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                        <span>${item.product.name} x${item.quantity}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `).join('')}
+
+                <div style="margin-top: 1rem;">
+                    <strong>Delivery Address:</strong><br>
+                    ${order.deliveryAddress.addressLine1}, ${order.deliveryAddress.city},
+                    ${order.deliveryAddress.state} ${order.deliveryAddress.zipCode}
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <strong>Payment:</strong> ${order.payment.paymentMethod} - ${order.payment.status}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+        try {
+            const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: getAdminHeaders(),
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                alert('Order status updated successfully!');
+                loadOrders();
+            } else {
+                alert('Failed to update order status');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to update order status');
+        }
+    }
+
+    loadOrders();
+</script>
 </body>
 </html>
