@@ -1,6 +1,6 @@
 package com.sanjay.ecommerce.dto;
 
-import com.ecommerce.model.Payment;
+import com.sanjay.ecommerce.model.Payment;
 import lombok.Data;
 
 @Data

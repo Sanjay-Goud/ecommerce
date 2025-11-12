@@ -1,11 +1,11 @@
 package com.sanjay.ecommerce.controller;
 
-import com.ecommerce.dto.*;
-import com.ecommerce.model.Cart;
-import com.ecommerce.model.User;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.repository.CartRepository;
-import com.ecommerce.security.JwtUtil;
+import com.sanjay.ecommerce.dto.*;
+import com.sanjay.ecommerce.model.Cart;
+import com.sanjay.ecommerce.model.User;
+import com.sanjay.ecommerce.repository.UserRepository;
+import com.sanjay.ecommerce.repository.CartRepository;
+import com.sanjay.ecommerce.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
